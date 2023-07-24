@@ -10,6 +10,7 @@
 from mbuild import power_expand_board
 from mbuild.encoder_motor import encoder_motor_class
 from mbuild.smart_camera import smart_camera_class
+from mbuild.smartservo import smartservo_class
 from mbuild import gamepad
 import math
 import time
@@ -27,7 +28,7 @@ encode_rr = encoder_motor_class("M4", "INDEX1")
 
 #Arm encode motor
 encode_arm = encoder_motor_class("M6", "INDEX1")
-encode_aim = encoder_motor_class("M5", "INDEX1")
+servo_aim = smartservo_class("M5", "INDEX1")
 
 #Camera Pin
 smart_cam = smart_camera_class("PORT5", "INDEX1")
@@ -178,10 +179,17 @@ class challenge_default:
 
     # Gun Function
     def gun():
-        global track
+        global track, BL_spd
         power_expand_board.set_power("BL1", BL_spd)
         power_expand_board.set_power("BL2", BL_spd)
-        power_expand_board.set_power("DC1", 100)
+
+        #if something stuck at sweeper we gotta reverse it
+        if gamepad.is_key_pressed("R2"):
+            power_expand_board.set_power("DC1", -100)
+        else:
+            power_expand_board.set_power("DC1", 100)
+
+
         if gamepad.is_key_pressed("R1"):
             power_expand_board.set_power("DC3", 100)
         elif gamepad.is_key_pressed("L1"):
@@ -189,7 +197,6 @@ class challenge_default:
         else:
             power_expand_board.set_power("DC3", 0)
 
-        challenge_default.Brushless_spd_mode()
 
         if track == True:
             degs = 0
@@ -197,9 +204,10 @@ class challenge_default:
                 degs = - (track_while_scan.get_object_deg(smart_cam.get_sign_x(1) - 160))
             else:
                 degs = 0
-            encode_aim.move_to(- (smart_cam.get_sign_x(1) - 160) /2, 100)
-            #rot = rot_spd
+            servo_aim.to(degs,10)
 
+        challenge_default.Brushless_spd_mode()
+        
     #Arm Function
     def arm():
         power_expand_board.set_power("BL1", 0)
@@ -214,7 +222,7 @@ class challenge_default:
 
         
 
-    def toggle_function(buttons, variable:str): # Test this function
+    def toggle_function(buttons, variable): # Test this function
         if gamepad.is_key_pressed(buttons):
             if variable == True:
                 variable = False
@@ -226,7 +234,8 @@ class challenge_default:
         
         return variable
 
-    def Brushless_spd_mode()
+    def Brushless_spd_mode():
+        global BL_spd
         if gamepad.is_key_pressed("R2"):
             if BL_spd == 50:
                 BL_spd = 80
@@ -237,6 +246,7 @@ class challenge_default:
             pass
             while gamepad.is_key_pressed("R2"):
                 pass
+        return BL_spd
     
     def auto(x, y, rot):
         global novapi_travelled_x,novapi_travelled_y,novapi_rot
@@ -303,16 +313,10 @@ class challenge_default:
         motors.pure_pursuit(x, y, rot, heading)
 
         # Toggle track
-
-        track = challenge_default.toggle_function("N1", gun)
-        if track == False:
-            track = True
-        else:
-            track = False
+        track = challenge_default.toggle_function("N1", track)
 
 
         # Change from Gun and Arm mode
-        
         gun = challenge_default.toggle_function("N2", gun)
         if gun == True:
             challenge_default.gun()
@@ -324,6 +328,7 @@ class challenge_default:
 
     #Start Program here
     def challenge_runtime():
+        #Check BackGround Process
         challenge_default.backgroundProcess()
         mode = "select" # select = selectmenu; program = run; anything else = ?
 
@@ -348,14 +353,14 @@ class challenge_default:
                     motors.pure_pursuit(0, -y_error, x_error, 90)
                     
             if gamepad.is_key_pressed("N4"):
-                mode = "program"
-                challenge_default.auto(30, 200, 90)
-                challenge_default.auto(-50, 40, 90)
-                challenge_default.auto(0, 0, 0)
+                mode = "auto"
+                challenge_default.auto(50, 0, 90)
                 while True:
                     challenge_default.manual()
             if gamepad.is_key_pressed("N3"):
-                mode = "program"
+                mode = "manual"
                 while True:
                     challenge_default.manual()
-
+            
+#Call Runtime (Start)
+challenge_default.challenge_runtime()
