@@ -33,15 +33,15 @@ encode_aim = encoder_motor_class("M5", "INDEX1")
 smart_cam = smart_camera_class("PORT5", "INDEX1")
 smart_cam.set_mode("color")
 
+#Rotation Sensitivity
+sensitivity_rot = 0.7
+
 # --- PID --- #
 kp = 0
 ki = 0
 kd = 0
 ks = 0
 # --- PID --- #
-
-sensitivity_rot = 0.7
-
 #-----Configuration-----#
 
 #Define variable
@@ -53,6 +53,7 @@ gun = True # True = gun; False = arm
 novapi_travelled_x = 0 # Needs to be updated every time. Missing equation!
 novapi_travelled_y = 0 # Needs to be updated every time. Missing equation!
 novapi_rot = 0
+BL_spd = 50
 
 #Function That Micropython doesn't inculde with
 def isneg(v):
@@ -178,8 +179,8 @@ class challenge_default:
     # Gun Function
     def gun():
         global track
-        power_expand_board.set_power("BL1", 50)
-        power_expand_board.set_power("BL2", 50)
+        power_expand_board.set_power("BL1", BL_spd)
+        power_expand_board.set_power("BL2", BL_spd)
         power_expand_board.set_power("DC1", 100)
         if gamepad.is_key_pressed("R1"):
             power_expand_board.set_power("DC3", 100)
@@ -187,6 +188,8 @@ class challenge_default:
             power_expand_board.set_power("DC3", -100)
         else:
             power_expand_board.set_power("DC3", 0)
+
+        challenge_default.Brushless_spd_mode()
 
         if track == True:
             degs = 0
@@ -208,6 +211,7 @@ class challenge_default:
             encode_arm.set_power(-100)
         else:
             encode_arm.set_power(0)
+
         
 
     def toggle_function(buttons, variable:str): # Test this function
@@ -222,6 +226,18 @@ class challenge_default:
         
         return variable
 
+    def Brushless_spd_mode()
+        if gamepad.is_key_pressed("R2"):
+            if BL_spd == 50:
+                BL_spd = 80
+            elif BL_spd == 80:
+                BL_spd = 50
+            else:
+                BL_spd = 50
+            pass
+            while gamepad.is_key_pressed("R2"):
+                pass
+    
     def auto(x, y, rot):
         global novapi_travelled_x,novapi_travelled_y,novapi_rot
         updatePosition()
