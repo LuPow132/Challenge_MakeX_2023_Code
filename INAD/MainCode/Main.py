@@ -84,8 +84,8 @@ def updatePosition():
     vx_world = (vx * math.cos(rheading)) - (vy * math.sin(rheading))
     vy_world = (vx * math.sin(rheading)) + (vy * math.cos(rheading))
 
-    novapi_travelled_x += vx_world * delta_time
-    novapi_travelled_y += vy_world * delta_time
+    #novapi_travelled_x += vx_world * delta_time
+    #novapi_travelled_y += vy_world * delta_time
     novapi_rot = heading
 
 def keep_upright(target_rot):
@@ -184,7 +184,7 @@ class challenge_default:
         power_expand_board.set_power("BL2", BL_spd)
 
         #if something stuck at sweeper we gotta reverse it
-        if gamepad.is_key_pressed("R2"):
+        if gamepad.is_key_pressed("L2"):
             power_expand_board.set_power("DC1", -100)
         else:
             power_expand_board.set_power("DC1", 100)
@@ -204,7 +204,8 @@ class challenge_default:
                 degs = - (track_while_scan.get_object_deg(smart_cam.get_sign_x(1) - 160))
             else:
                 degs = 0
-            servo_aim.to(degs,10)
+            degs = degs-65
+            servo_aim.move_to(degs,10)
 
         challenge_default.Brushless_spd_mode()
         
@@ -342,7 +343,7 @@ class challenge_default:
                     y_error = 0
                     if(smart_cam_rear.detect_sign(1)):
                         pos_x = smart_cam_rear.get_sign_x(1) - 160
-                        pos_y = smart_cam_rear.get_sign_y(1) - 120
+                        pos_y = -(smart_cam_rear.get_sign_y(1) - 120)
 
                         x_error = motors.throttle_curve(0 - pos_x, 0.005, 2)
                         y_error = motors.throttle_curve(0 - pos_y, 0.005, 2)
@@ -350,11 +351,17 @@ class challenge_default:
                         x_error = 0
                         y_error = 0
                     
-                    motors.pure_pursuit(0, -y_error, x_error, 90)
+                    servo_aim.move_to(x_error,20)
+                    #motors.pure_pursuit(0, -y_error, x_error, 90)
                     
             if gamepad.is_key_pressed("N4"):
                 mode = "auto"
+                #If slide then multipy with 2 of how much you wanna move
+                challenge_default.auto(30, 200, 90)
+                power_expand_board.set_power("DC1", 100)
+                power_expand_board.set_power("DC3", 100)
                 challenge_default.auto(50, 0, 90)
+                challenge_default.auto(0, 0, 0)
                 while True:
                     challenge_default.manual()
             if gamepad.is_key_pressed("N3"):
