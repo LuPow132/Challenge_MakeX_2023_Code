@@ -343,7 +343,7 @@ class challenge_default:
                     y_error = 0
                     if(smart_cam_rear.detect_sign(1)):
                         pos_x = smart_cam_rear.get_sign_x(1) - 160
-                        pos_y = -(smart_cam_rear.get_sign_y(1) - 120)
+                        pos_y = -1 * (smart_cam_rear.get_sign_y(1) - 120)
 
                         x_error = motors.throttle_curve(0 - pos_x, 0.005, 2)
                         y_error = motors.throttle_curve(0 - pos_y, 0.005, 2)
@@ -356,6 +356,7 @@ class challenge_default:
                     
             if gamepad.is_key_pressed("N4"):
                 mode = "auto"
+                
                 #If slide then multipy with 2 of how much you wanna move
                 challenge_default.auto(30, 200, 90)
                 power_expand_board.set_power("DC1", 100)
