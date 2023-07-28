@@ -431,16 +431,15 @@ class challenge_default:
                 while True:
                     challenge_default.manual()
 
-    # def start_board_with_power_management:
-    #     if power_manage_module.is_auto_mode():
-    #         pass
-    #         #auto code here
-    #     else:
-    #         #manual code here
-    #         pass
+    def start_board_with_power_management():
+        if power_manage_module.is_auto_mode():
+    
+            #auto code here
+        else:
+            #manual code here
 
 #Call Runtime (Start) for practice
 challenge_default.challenge_runtime()
 
 #Call board with powermanagement baord
-#challenge_default.
+#challenge_default.start_board_with_power_management()
