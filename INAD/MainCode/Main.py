@@ -30,7 +30,7 @@ encode_rr = encoder_motor_class("M4", "INDEX1")
 
 #Arm encode motor
 servo_arm_L = smartservo_class("M6", "INDEX1")
-servo_aim_R = smartservo_class("M6", "INDEX2")
+servo_arm_R = smartservo_class("M6", "INDEX2")
 
 #Camera Pin
 smart_cam = smart_camera_class("PORT3", "INDEX1")
@@ -45,11 +45,11 @@ grabber_sensitivity = 5
 
 
 # --- PID --- #
-kp = 0
-ki = 0
-kd = 0
-ks = 0
+rot_Kp = 0.2
+rot_Ki = 0.0
+rot_Kd = 0.5
 # --- PID --- #
+
 #-----Configuration-----#
 
 #Define variable
@@ -58,11 +58,12 @@ heading = 0  # Used in all program aspects
 track = True
 gun = True # True = gun; False = arm
 reverse = False 
+rot_errorGap = 0
 
 novapi_travelled_x = 0 # Needs to be updated every time. Missing equation!
 novapi_travelled_y = 0 # Needs to be updated every time. Missing equation!
 novapi_rot = 0
-BL_spd = 50
+BL_spd = 17
 
 #Function That Micropython doesn't inculde with
 def isneg(v):
@@ -182,12 +183,13 @@ class challenge_default:
     
     # Call update Task
     def backgroundProcess():
-        track_while_scan.lock_target(1)
+        #track_while_scan.lock_target(1)
         updatePosition()
 
     # Gun Function
     def gun():
         global track, BL_spd
+
         power_expand_board.set_power("BL1", BL_spd)
         power_expand_board.set_power("BL2", BL_spd)
 
@@ -204,16 +206,7 @@ class challenge_default:
             power_expand_board.set_power("DC2", -100)
         else:
             power_expand_board.set_power("DC2", 0)
-
-
-        if track == True:
-            degs = 0
-            if smart_cam.get_sign_x(1):
-                degs = - (track_while_scan.get_object_deg(smart_cam.get_sign_x(1) - 160))
-            else:
-                degs = 0
-            degs = degs-65
-            #servo_aim.move_to(degs,10)
+            
 
         challenge_default.Brushless_spd_mode()
         
@@ -237,6 +230,15 @@ class challenge_default:
 
         else:
             servo_arm_L.set_power(0)
+        
+        if gamepad.is_key_pressed("L2"):
+            servo_arm_R.set_power(grabber_sensitivity)
+
+        elif gamepad.is_key_pressed("R2"):
+            servo_arm_R.set_power(-grabber_sensitivity)
+
+        else:
+            servo_arm_R.set_power(0)
 
         
 
@@ -257,14 +259,14 @@ class challenge_default:
     def Brushless_spd_mode():
         global BL_spd
         if gamepad.is_key_pressed("R2"):
-            if BL_spd == 50:
-                BL_spd = 80
-            elif BL_spd == 80:
+            if BL_spd == 17:
+                BL_spd = 70
+            elif BL_spd == 70:
                 BL_spd = 0
             elif BL_spd == 0:
-                BL_spd = 50
+                BL_spd = 17
             else:
-                BL_spd = 50
+                BL_spd = 17
             pass
             while gamepad.is_key_pressed("R2"):
                 pass
@@ -322,6 +324,27 @@ class challenge_default:
             novapi_travelled_x = x_dest
             novapi_travelled_y = y_dest
 
+    def aim_assist():
+        rot_d = 0
+        rot_pError = 0
+        rot_i = 0
+        rot_d = 0
+        if smart_cam.detect_sign(1):
+            PinPosX = smart_cam.get_sign_x(1)
+            rot_error = 160 - PinPosX
+            rot_d = rot_d + rot_error
+            rot_d = constrain(rot_d,-100,100)
+            rot_d = rot_error - rot_pError
+            rot_w = rot_error * rot_Kp + rot_i * rot_Ki + rot_d * rot_Kd
+            rot_w = constrain(rot_w,-100,100)
+
+            motors.holonomic(0, [0, 0, 0], rot_w)
+            if (abs(rot_error) < rot_errorGap):
+                motors.holonomic(0, [0, 0, 0], 0)
+            rot_pError = rot_error;
+        else:
+            motors.holonomic(0, [0, 0, 0], 0)
+
     def is_ball_on_feed():
         if ball_checker.get_distance() < 6:
             return True
@@ -329,10 +352,10 @@ class challenge_default:
             return False
 
     def auto_program():
-        challenge_default.auto(140, 0, 0)
+        challenge_default.auto(160, 30, 0)
         time.sleep(0.3)
         motors.pure_pursuit(0, 100, 0, 90)
-        time.sleep(1.4)
+        time.sleep(0.6)
         motors.pure_pursuit(0, 0, 0, 90)
         time.sleep(0.3)
         challenge_default.auto(0, 0, 90)
@@ -340,7 +363,7 @@ class challenge_default:
         power_expand_board.set_power("DC1", 100)
         power_expand_board.set_power("DC2", 70)
         motors.pure_pursuit(0, 70, 0, 90)
-        time.sleep(1)
+        time.sleep(1.2)
         motors.pure_pursuit(0, -70, 0, 90)
         time.sleep(0.5)
         motors.pure_pursuit(0, 0, 0, 90)
@@ -368,26 +391,30 @@ class challenge_default:
 
         reverse = challenge_default.toggle_function("+", reverse)
 
-        #Move robot using controller
-        if reverse == True:
-            motors.pure_pursuit(-x, -y, rot, heading)
+        while gamepad.is_key_pressed("N1"):
+            challenge_default.aim_assist()
+
         else:
-            motors.pure_pursuit(x, y, rot, heading)
+            #Move robot using controller
+            if reverse == True:
+                motors.pure_pursuit(-x, -y, rot, heading)
+            else:
+                motors.pure_pursuit(x, y, rot, heading)
+                
+                
+            # Toggle track
+            track = challenge_default.toggle_function("N1", track)
+
+
+            # Change from Gun and Arm mode
+            gun = challenge_default.toggle_function("N2", gun)
+            if gun == True:
+                challenge_default.gun()
+            else:
+                challenge_default.arm()
             
-        # Toggle track
-        track = challenge_default.toggle_function("N1", track)
-
-
-
-        # Change from Gun and Arm mode
-        gun = challenge_default.toggle_function("N2", gun)
-        if gun == True:
-            challenge_default.gun()
-        else:
-            challenge_default.arm()
-        
-        #call background process after finish everything
-        challenge_default.backgroundProcess()
+            #call background process after finish everything
+            challenge_default.backgroundProcess()
 
     #Start Program here
     def challenge_runtime():
@@ -397,22 +424,29 @@ class challenge_default:
 
         while mode == "select":
             if gamepad.is_key_pressed("N1"):
-
-                x_error = 0   
-                y_error = 0
+                rot_d = 0
+                rot_pError = 0
+                rot_i = 0
+                rot_d = 0
+                rot_errorGap = 10
                 while True:
-                    if(smart_cam.detect_sign(1)):
-                        pos_x = smart_cam.get_sign_x(1) - 160
-                        pos_y = -1 * (smart_cam.get_sign_y(1) - 120)
+                    if smart_cam.detect_sign(1):
+                        PinPosX = smart_cam.get_sign_x(1)
+                        rot_error = 160 - PinPosX
+                        rot_d = rot_d + rot_error
+                        rot_d = constrain(rot_d,-100,100)
+                        rot_d = rot_error - rot_pError
+                        rot_w = rot_error * rot_Kp + rot_i * rot_Ki + rot_d * rot_Kd
+                        rot_w = constrain(rot_w,-100,100)
 
-                        x_error = motors.throttle_curve(0 - pos_x, 0.005, 2)
-                        y_error = motors.throttle_curve(0 - pos_y, 0.005, 2)
+                        motors.holonomic(0, [0, 0, 0], rot_w)
+                        if (abs(rot_error) < rot_errorGap):
+                            motors.holonomic(0, [0, 0, 0], 0)
+                        rot_pError = rot_error;
                     else:
-                        x_error = 0
-                        y_error = 0
-                    
-                    power_expand_board.set_power("DC3", 50)
-                    challenge_default.auto(0, 0, x_error)
+                        motors.holonomic(0, [0, 0, 0], 0)
+
+
                     
             if gamepad.is_key_pressed("N4"):
                 mode = "auto"
@@ -433,9 +467,10 @@ class challenge_default:
 
     def start_board_with_power_management():
         if power_manage_module.is_auto_mode():
-    
+            pass
             #auto code here
         else:
+            pass
             #manual code here
 
 #Call Runtime (Start) for practice
