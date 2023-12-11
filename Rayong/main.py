@@ -83,9 +83,6 @@ class program:
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
 
-        
-
-
 
 while True:
     program.manual()
