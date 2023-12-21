@@ -21,7 +21,13 @@ encode_rl = encoder_motor_class("M3", "INDEX1")
 encode_rr = encoder_motor_class("M4", "INDEX1")
 encode_feeder = encoder_motor_class("M5", "INDEX1")
 
+#Pin grabber Servo
+#Arm encode motor
+servo_grabber_main = smartservo_class("M6", "INDEX1")
+servo_grabber_sub = smartservo_class("M6", "INDEX2")
+
 #Sensitivity
+BL_spd = 25
 sensitivity_rot = 0.7
 
 #---Class and Function---#
@@ -60,6 +66,25 @@ class useful_function:
             while gamepad.is_key_pressed("R2"):
                 pass
         return BL_spd
+
+    def arm_control():
+        #Open and close the Cube Grabber
+        if gamepad.is_key_pressed("Right"):
+            power_expand_board.set_power("DC1", 100)
+        elif gamepad.is_key_pressed("Left"):
+            power_expand_board.set_power("DC1", -100)
+        else:
+            power_expand_board.stop("DC1")
+
+        #move the arm up and down
+        if gamepad.is_key_pressed("Up"):
+            power_expand_board.set_power("DC2", 100)
+        elif gamepad.is_key_pressed("Down"):
+            power_expand_board.set_power("DC2", -100)
+        else:
+            power_expand_board.stop("DC2")
+
+        
     
 class program:
 
@@ -82,6 +107,7 @@ class program:
 
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
+        useful_function.arm_control()
 
 
 while True:
