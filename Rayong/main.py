@@ -22,14 +22,14 @@ encode_rr = encoder_motor_class("M4", "INDEX1")
 encode_feeder = encoder_motor_class("M5", "INDEX1")
 
 #Pin grabber Servo
-#Arm encode motor
 servo_grabber_main = smartservo_class("M6", "INDEX1")
 servo_grabber_sub = smartservo_class("M6", "INDEX2")
 
 #Sensitivity
 BL_spd = 25
 sensitivity_rot = 0.7
-
+sensitivity_RY = -0.4
+box_grab_state = False
 #---Class and Function---#
 
 class motors:
@@ -83,6 +83,30 @@ class useful_function:
             power_expand_board.set_power("DC2", -100)
         else:
             power_expand_board.stop("DC2")
+
+        useful_function.box_grabber_control()
+
+    def box_grabber_control():
+        global box_grab_state
+        servo_grabber_main.set_power(gamepad.get_joystick("Ry") * sensitivity_RY)
+
+        #open and cloes grabber
+        if gamepad.is_key_pressed("N1"):
+            if box_grab_state == True:
+                servo_grabber_sub.move_to(-30, 30)
+                box_grab_state = False
+                while gamepad.is_key_pressed("N1"):
+                    pass
+
+            elif box_grab_state == False:
+                servo_grabber_sub.move_to(45, 30)
+                box_grab_state = True
+                while gamepad.is_key_pressed("N1"):
+                    pass
+            
+            
+        
+
 
         
     
