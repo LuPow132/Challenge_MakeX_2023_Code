@@ -111,7 +111,7 @@ class useful_function:
                 box_grab_state = False
                 while gamepad.is_key_pressed("N2"):
                     pass
-            elif box-grab_state == false:
+            elif box-grab_state == False:
                 servo_grabber_main.move_to(0,30)
                 box_grab_state = False
                 while gamepad.is_key_pressed("N2")
