@@ -106,12 +106,12 @@ class useful_function:
 
      # new shortcut key N2,N4        
         if gamepad.is_key_pressed("N2"):
-            if box_grab_state == True:
+            if box_grab_state == False:
                 servo_grabber_main.move_to (90,30)      
-                box_grab_state = False
+                box_grab_state = True
                 while gamepad.is_key_pressed("N2"):
                     pass
-            elif box-grab_state == False:
+            elif box-grab_state == True:
                 servo_grabber_main.move_to(0,30)
                 box_grab_state = False
                 while gamepad.is_key_pressed("N2")
