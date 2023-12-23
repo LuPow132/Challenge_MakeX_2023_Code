@@ -93,7 +93,7 @@ class useful_function:
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
             if box_grab_state == True:
-                servo_grabber_sub.move_to(-30, 30)
+                servo_grabber_sub.move_to(-17, 30)    
                 box_grab_state = False
                 while gamepad.is_key_pressed("N1"):
                     pass
@@ -102,6 +102,32 @@ class useful_function:
                 servo_grabber_sub.move_to(45, 30)
                 box_grab_state = True
                 while gamepad.is_key_pressed("N1"):
+                    pass
+
+     # new shortcut key N2,N4        
+        if gamepad.is_key_pressed("N2"):
+            if box_grab_state == True:
+                servo_grabber_main.move_to (90,30)      
+                box_grab_state = False
+                while gamepad.is_key_pressed("N2"):
+                    pass
+            elif box-grab_state == false:
+                servo_grabber_main.move_to(0,30)
+                box_grab_state = False
+                while gamepad.is_key_pressed("N2")
+                    pass
+            
+        if gamepad.is_key_pressed("N4"):
+            if box_grab_state == False:
+                servo_grabber_sub.move_to(-12, 30)
+                box_grab_state = True
+                while gamepad.is_key_pressed("N4"):
+                    pass
+
+            elif box_grab_state == True:
+                servo_grabber_sub.move_to(45, 30)
+                box_grab_state = False
+                while gamepad.is_key_pressed("N4"):
                     pass
             
             
