@@ -76,13 +76,29 @@ class useful_function:
         else:
             power_expand_board.stop("DC1")
 
-        #move the arm up and down
+        #move the arm up and down   # Add for encoder motor
         if gamepad.is_key_pressed("Up"):
+          #  encode_updown.set_power(100)
             power_expand_board.set_power("DC2", 100)
         elif gamepad.is_key_pressed("Down"):
+           # encode_updown.set_power(-100)
             power_expand_board.set_power("DC2", -100)
         else:
+          #  encode_updown.set_power(0)
             power_expand_board.stop("DC2")
+
+        #Flip cube trun left and trun right
+        if gamepad.is_key_pressed("≡"):
+           #  trun left set_power(100) 
+            power_expand_board.set_power("DC3", 100)
+        elif gamepad.is_key_pressed("+"):
+           # trun right set_power(-100)
+            power_expand_board.set_power("DC3", -100)
+        else:
+          # set_power(0)
+            power_expand_board.set_power("DC3",0)
+
+
 
         useful_function.box_grabber_control()
 
@@ -92,31 +108,28 @@ class useful_function:
 
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
-            if box_grab_state == True:
-                servo_grabber_sub.move_to(-17, 30)    
-                box_grab_state = False
+          #  if box_grab_state == False:
+                servo_grabber_sub.move_to(-16.5, 30)   #-17
+             #   box_grab_state = True
                 while gamepad.is_key_pressed("N1"):
                     pass
 
-            elif box_grab_state == False:
-                servo_grabber_sub.move_to(45, 30)
-                box_grab_state = True
-                while gamepad.is_key_pressed("N1"):
-                    pass
+           # elif box_grab_state == False:
+           #     servo_grabber_sub.move_to(45, 30)
+            #    box_grab_state = True
+            #    while gamepad.is_key_pressed("N1"):
+             #       pass
 
-     # new shortcut key N2,N4        
+           # new shortcut key N2,N3,N4  
         if gamepad.is_key_pressed("N2"):
-            if box_grab_state == False:
-                servo_grabber_main.move_to (90,30)      
-                box_grab_state = True
-                while gamepad.is_key_pressed("N2"):
-                    pass
-            elif box-grab_state == True:
-                servo_grabber_main.move_to(0,30)
-                box_grab_state = False
-                while gamepad.is_key_pressed("N2")
-                    pass
-            
+           
+                servo_grabber_main.move_to(45, 30)   
+                time.sleep(0.5)
+              
+        if gamepad.is_key_pressed("N3"):   
+                servo_grabber_main.move_to(147, 30)  
+                time.sleep(0.5)
+                   
         if gamepad.is_key_pressed("N4"):
             if box_grab_state == False:
                 servo_grabber_sub.move_to(-12, 30)
@@ -129,11 +142,6 @@ class useful_function:
                 box_grab_state = False
                 while gamepad.is_key_pressed("N4"):
                     pass
-            
-            
-        
-
-
         
     
 class program:
