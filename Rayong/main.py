@@ -22,7 +22,7 @@ encode_rr = encoder_motor_class("M4", "INDEX1")
 encode_feeder = encoder_motor_class("M5", "INDEX1")
 
 #Pin grabber Servo
-servo_grabber_main = smartservo_class("M6", "INDEX1")
+servo_grabber_main = smartservo_class("M6", "INDEX1")  
 servo_grabber_sub = smartservo_class("M6", "INDEX2")
 
 #Sensitivity
@@ -30,6 +30,8 @@ BL_spd = 25
 sensitivity_rot = 0.7
 sensitivity_RY = -0.4
 box_grab_state = False
+gun_mode = True
+
 #---Class and Function---#
 
 class motors:
@@ -88,23 +90,25 @@ class useful_function:
             power_expand_board.stop("DC2")
 
         #Flip cube trun left and trun right
-        if gamepad.is_key_pressed("≡"):
+        if gamepad.is_key_pressed("L2"):
            #  trun left set_power(100) 
-            power_expand_board.set_power("DC3", 100)
-        elif gamepad.is_key_pressed("+"):
+            power_expand_board.set_power("DC4", 100)
+        elif gamepad.is_key_pressed("R2"):
            # trun right set_power(-100)
-            power_expand_board.set_power("DC3", -100)
+            power_expand_board.set_power("DC4", -100)
         else:
           # set_power(0)
-            power_expand_board.set_power("DC3",0)
+            power_expand_board.set_power("DC4",0)
 
 
 
         useful_function.box_grabber_control()
 
+    def gun_control():
+        power_expand_board.set_power("DC3", gamepad.get_joystick("Ry") * sensitivity_RY) 
+
     def box_grabber_control():
         global box_grab_state
-        servo_grabber_main.set_power(gamepad.get_joystick("Ry") * sensitivity_RY)
 
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
@@ -165,7 +169,12 @@ class program:
 
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
-        useful_function.arm_control()
+        if gun_mode == True:
+            useful_function.arm_control()
+            useful_function.gun_control()
+        else:
+            pass
+            
 
 
 while True:
