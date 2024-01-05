@@ -105,7 +105,7 @@ class useful_function:
         useful_function.box_grabber_control()
 
     def gun_control():
-        power_expand_board.set_power("DC3", gamepad.get_joystick("Ry") * sensitivity_RY) 
+        power_expand_board.set_power("DC3", -1 * gamepad.get_joystick("Ry") * sensitivity_RY) 
 
     def box_grabber_control():
         global box_grab_state
