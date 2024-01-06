@@ -19,7 +19,12 @@ encode_fl = encoder_motor_class("M1", "INDEX1")
 encode_fr = encoder_motor_class("M2", "INDEX1")
 encode_rl = encoder_motor_class("M3", "INDEX1")
 encode_rr = encoder_motor_class("M4", "INDEX1")
-encode_feeder = encoder_motor_class("M5", "INDEX1")
+
+# DC1 = Cloes/Open cube servo_grabber_main
+# DC2 = Pull whole Arm Up/Down
+# DC3 = Aim the barrel Up/Down
+# DC4 = Rotate cube
+# DC5 = ball feeder (side)
 
 #Pin grabber Servo
 servo_grabber_main = smartservo_class("M6", "INDEX1")  
@@ -69,6 +74,18 @@ class useful_function:
                 pass
         return BL_spd
 
+    def toggle_function(buttons, variable): # Test this function
+        if gamepad.is_key_pressed(buttons):
+            if variable == True:
+                variable = False
+            else:
+                variable = True
+            pass
+            while gamepad.is_key_pressed(buttons):
+                pass
+        
+        return variable
+    
     def arm_control():
         #Open and close the Cube Grabber
         if gamepad.is_key_pressed("Right"):
@@ -100,12 +117,9 @@ class useful_function:
           # set_power(0)
             power_expand_board.set_power("DC4",0)
 
-
-
+        #call for sub arm (pin arm)
         useful_function.box_grabber_control()
 
-    def gun_control():
-        power_expand_board.set_power("DC3", -1 * gamepad.get_joystick("Ry") * sensitivity_RY) 
 
     def box_grabber_control():
         global box_grab_state
@@ -147,6 +161,16 @@ class useful_function:
                 while gamepad.is_key_pressed("N4"):
                     pass
         
+    def gun_control():
+        power_expand_board.set_power("DC3", -1 * gamepad.get_joystick("Ry") * sensitivity_RY)
+
+        #feel ball
+        if gamepad.is_key_pressed("L1"):
+            power_expand_board.set_power("DC5", 100)
+        elif gamepad.is_key_pressed("R1"):
+            power_expand_board.set_power("DC5", -100)
+        else:
+            power_expand_board.stop("DC5")
     
 class program:
 
@@ -159,21 +183,16 @@ class program:
         #movement
         motors.holonomic(y,x,rot)
 
-        #feel ball
-        if gamepad.is_key_pressed("L1"):
-            encode_feeder.set_power(100)
-        elif gamepad.is_key_pressed("R1"):
-            encode_feeder.set_power(-100)
-        else:
-            encode_feeder.set_power(0)
-
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
+
+        #check if the button press or not to change the toggle function
+        gun_mode = useful_function.toggle_function("≡",gun_mode)
+
         if gun_mode == True:
-            useful_function.arm_control()
             useful_function.gun_control()
         else:
-            pass
+            useful_function.arm_control()
             
 
 
