@@ -195,6 +195,8 @@ class program:
 
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
+        power_expand_board.set_power("BL1", BL_spd)
+        power_expand_board.set_power("BL2", BL_spd)
 
         #check if the button press or not to change the toggle function
         gun_mode = useful_function.toggle_function("≡",gun_mode)
