@@ -21,6 +21,12 @@ encode_rl = encoder_motor_class("M3", "INDEX1")
 encode_rr = encoder_motor_class("M4", "INDEX1")
 encode_feeder = encoder_motor_class("M5", "INDEX1")
 
+# DC1 = Cloes/Open cube servo_grabber_main
+# DC2 = Pull whole Arm Up/Down
+# DC3 = Aim the barrel Up/Down
+# DC4 = Rotate cube
+# DC5 = ball feeder (side)
+
 #Pin grabber Servo
 servo_grabber_main = smartservo_class("M6", "INDEX1")  
 servo_grabber_sub = smartservo_class("M6", "INDEX2")
@@ -55,7 +61,7 @@ class motors:
 class useful_function:
     def Brushless_spd_mode():
         global BL_spd
-        if gamepad.is_key_pressed("R2"):
+        if gamepad.is_key_pressed("R_Thumb"):
             if BL_spd == 25:
                 BL_spd = 70
             elif BL_spd == 70:
@@ -65,10 +71,23 @@ class useful_function:
             else:
                 BL_spd = 25
             pass
-            while gamepad.is_key_pressed("R2"):
+            while gamepad.is_key_pressed("R_Thumb"):
                 pass
         return BL_spd
 
+    def toggle_function(buttons, variable): # Test this function
+        
+        if gamepad.is_key_pressed(buttons):
+            if variable == True:
+                variable = False
+            else:
+                variable = True
+            pass
+            while gamepad.is_key_pressed(buttons):
+                pass
+        
+        return variable
+    
     def arm_control():
         #Open and close the Cube Grabber
         if gamepad.is_key_pressed("Right"):
@@ -90,26 +109,23 @@ class useful_function:
             power_expand_board.stop("DC2")
 
         #Flip cube trun left and trun right
-        if gamepad.is_key_pressed("L2"):
+        if gamepad.is_key_pressed("L1"):
            #  trun left set_power(100) 
-            power_expand_board.set_power("DC4", 100)
-        elif gamepad.is_key_pressed("R2"):
+            power_expand_board.set_power("DC5", 100)
+        elif gamepad.is_key_pressed("R1"):
            # trun right set_power(-100)
-            power_expand_board.set_power("DC4", -100)
+            power_expand_board.set_power("DC5", -100)
         else:
           # set_power(0)
-            power_expand_board.set_power("DC4",0)
+            power_expand_board.set_power("DC5",0)
 
-
-
+        #call for sub arm (pin arm)
         useful_function.box_grabber_control()
 
-    def gun_control():
-        power_expand_board.set_power("DC3", -1 * gamepad.get_joystick("Ry") * sensitivity_RY) 
 
     def box_grabber_control():
         global box_grab_state
-
+        servo_grabber_main.set_power( -1 * gamepad.get_joystick("Ry") * 0.2)
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
           #  if box_grab_state == False:
@@ -147,11 +163,29 @@ class useful_function:
                 while gamepad.is_key_pressed("N4"):
                     pass
         
+    def gun_control():
+        if gamepad.is_key_pressed("R2"):
+            encode_feeder.set_power(100)
+        elif gamepad.is_key_pressed("L2"):
+            encode_feeder.set_power(-100)
+        else:
+            encode_feeder.set_power(0)
+        #feel ball
+
+        if gamepad.is_key_pressed("L1"):
+            power_expand_board.set_power("DC3", 100)
+        elif gamepad.is_key_pressed("R1"):
+            power_expand_board.set_power("DC3", -100)
+        else:
+            power_expand_board.stop("DC3")
+
+        power_expand_board.set_power("DC4", -1 * gamepad.get_joystick("Ry") * sensitivity_RY)
     
 class program:
 
     #manual program
     def manual():
+        global gun_mode
         x = gamepad.get_joystick("Lx")
         y = gamepad.get_joystick("Ly") * -1
         rot = gamepad.get_joystick("Rx") * sensitivity_rot
@@ -159,21 +193,16 @@ class program:
         #movement
         motors.holonomic(y,x,rot)
 
-        #feel ball
-        if gamepad.is_key_pressed("L1"):
-            encode_feeder.set_power(100)
-        elif gamepad.is_key_pressed("R1"):
-            encode_feeder.set_power(-100)
-        else:
-            encode_feeder.set_power(0)
-
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
+
+        #check if the button press or not to change the toggle function
+        gun_mode = useful_function.toggle_function("≡",gun_mode)
+
         if gun_mode == True:
-            useful_function.arm_control()
             useful_function.gun_control()
         else:
-            pass
+            useful_function.arm_control()
             
 
 
