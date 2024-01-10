@@ -139,13 +139,7 @@ class useful_function:
              #   box_grab_state = True
                 while gamepad.is_key_pressed("N1"):
                     pass
-
-           # elif box_grab_state == False:
-           #     servo_grabber_sub.move_to(45, 30)
-            #    box_grab_state = True
-            #    while gamepad.is_key_pressed("N1"):
-             #       pass
-
+     
            # new shortcut key N2,N3,N4  
         if gamepad.is_key_pressed("N2"):
            
