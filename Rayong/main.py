@@ -68,14 +68,14 @@ class useful_function:
     def Brushless_spd_mode():
         global BL_spd
         if gamepad.is_key_pressed("R_Thumb"):
-            if BL_spd == 25:
-                BL_spd = 70
-            elif BL_spd == 70:
+            if BL_spd == 70:
+                BL_spd = 100
+            elif BL_spd == 100:
                 BL_spd = 0
             elif BL_spd == 0:
-                BL_spd = 25
+                BL_spd = 70
             else:
-                BL_spd = 25
+                BL_spd = 70
             pass
             while gamepad.is_key_pressed("R_Thumb"):
                 pass
