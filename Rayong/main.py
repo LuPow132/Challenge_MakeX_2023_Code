@@ -15,10 +15,16 @@ import novapi
 #Assign each encode ,servo motor ,camera
 
 #drive encode motor
-encode_fl = encoder_motor_class("M1", "INDEX1")
-encode_fr = encoder_motor_class("M2", "INDEX1")
-encode_rl = encoder_motor_class("M3", "INDEX1")
-encode_rr = encoder_motor_class("M4", "INDEX1")
+#encode_fl = encoder_motor_class("M1", "INDEX1")
+#encode_fr = encoder_motor_class("M2", "INDEX1")
+#encode_rl = encoder_motor_class("M3", "INDEX1")
+#encode_rr = encoder_motor_class("M4", "INDEX1")
+encode_fl = encoder_motor_class("M4", "INDEX1")
+encode_fr = encoder_motor_class("M3", "INDEX1")
+encode_rl = encoder_motor_class("M2", "INDEX1")
+encode_rr = encoder_motor_class("M1", "INDEX1")
+
+
 encode_feeder = encoder_motor_class("M5", "INDEX1")
 
 # DC1 = Cloes/Open cube servo_grabber_main
