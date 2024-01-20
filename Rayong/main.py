@@ -27,22 +27,21 @@ encode_rr = encoder_motor_class("M1", "INDEX1")
 
 encode_feeder = encoder_motor_class("M5", "INDEX1")
 
-# DC1 = Cloes/Open cube servo_grabber_main
-# DC2 = Pull whole Arm Up/Down
-# DC3 = Aim the barrel Up/Down
-# DC4 = Rotate cube
-# DC5 = ball feeder (side)
+# DC1 = ball check
+# DC2 = arm up/down
+# DC3 = feed barrel
 
 #Pin grabber Servo
 servo_grabber_main = smartservo_class("M6", "INDEX1")  
 servo_grabber_sub = smartservo_class("M6", "INDEX2")
 
 #Sensitivity
-BL_spd = 25
+BL_spd = 0
 sensitivity_rot = 0.7
 sensitivity_RY = -0.4
 box_grab_state = False
-gun_mode = True
+ball_flicker = True
+side = True
 
 #---Class and Function---#
 
@@ -95,14 +94,6 @@ class useful_function:
         return variable
     
     def arm_control():
-        #Open and close the Cube Grabber
-        if gamepad.is_key_pressed("Right"):
-            power_expand_board.set_power("DC1", 100)
-        elif gamepad.is_key_pressed("Left"):
-            power_expand_board.set_power("DC1", -100)
-        else:
-            power_expand_board.stop("DC1")
-
         #move the arm up and down   # Add for encoder motor
         if gamepad.is_key_pressed("Up"):
           #  encode_updown.set_power(100)
@@ -114,16 +105,6 @@ class useful_function:
           #  encode_updown.set_power(0)
             power_expand_board.stop("DC2")
 
-        #Flip cube trun left and trun right
-        if gamepad.is_key_pressed("L1"):
-           #  trun left set_power(100) 
-            power_expand_board.set_power("DC5", 100)
-        elif gamepad.is_key_pressed("R1"):
-           # trun right set_power(-100)
-            power_expand_board.set_power("DC5", -100)
-        else:
-          # set_power(0)
-            power_expand_board.set_power("DC5",0)
 
         #call for sub arm (pin arm)
         useful_function.box_grabber_control()
@@ -178,33 +159,40 @@ class useful_function:
             power_expand_board.set_power("DC3", -100)
         else:
             power_expand_board.stop("DC3")
-
-        power_expand_board.set_power("DC4", -1 * gamepad.get_joystick("Ry") * sensitivity_RY)
     
 class program:
 
     #manual program
     def manual():
-        global gun_mode
-        x = gamepad.get_joystick("Lx")
-        y = gamepad.get_joystick("Ly") * -1
+        global gun_mode,side,ball_flicker
+
+        side = useful_function.toggle_function("≡",side)
+        ball_flicker = useful_function.toggle_function("+",ball_flicker)
+
+        if side == True:
+            x = gamepad.get_joystick("Lx")
+            y = gamepad.get_joystick("Ly") * -1
+        else:
+            x = gamepad.get_joystick("Ly")
+            y = gamepad.get_joystick("Lx") * -1
+
         rot = gamepad.get_joystick("Rx") * sensitivity_rot
 
         #movement
         motors.holonomic(y,x,rot)
+
+        if ball_flicker == True:
+            power_expand_board.set_power("DC1", -100)
+        else:
+            power_expand_board.stop("DC1")
 
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
         power_expand_board.set_power("BL1", BL_spd)
         power_expand_board.set_power("BL2", BL_spd)
 
-        #check if the button press or not to change the toggle function
-        gun_mode = useful_function.toggle_function("≡",gun_mode)
-
-        if gun_mode == True:
-            useful_function.gun_control()
-        else:
-            useful_function.arm_control()
+        useful_function.gun_control()
+        useful_function.arm_control()
             
 
 
