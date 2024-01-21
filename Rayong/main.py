@@ -6,6 +6,7 @@ from mbuild.smartservo import smartservo_class
 from mbuild import gamepad
 from mbuild import power_manage_module
 from mbuild.ranging_sensor import ranging_sensor_class
+from mbuild.led_matrix import led_matrix_class
 import math
 import time
 import novapi
@@ -35,18 +36,28 @@ encode_feeder = encoder_motor_class("M5", "INDEX1")
 servo_grabber_main = smartservo_class("M6", "INDEX1")  
 servo_grabber_sub = smartservo_class("M6", "INDEX2")
 
+led_matrix_1 = led_matrix_class("PORT2", "INDEX1")
+
 #Sensitivity
 BL_spd = 0
-sensitivity_rot = 0.7
-sensitivity_RY = -0.4
+sensitivity_rot = 0.5
+sensitivity_RY = 0.4
 box_grab_state = False
 ball_flicker = True
 side = True
+current_overload_loop = False
+
+#PID
+head_Kp = 1
+head_Kd = 1
+head_d = 0.0
+head_w = 0.0
+head_pError = 0.0
+heading_sensitivity = 1
 
 #---Class and Function---#
 
 class motors:
-
     #drive each motors in one function
     def drive(v1:int, v2:int, v3:int, v4:int):
         encode_fl.set_power(v1 * -1)
@@ -93,6 +104,13 @@ class useful_function:
         
         return variable
     
+    def constrain(v, mn, mx):
+        if v < mn : return mn
+        if v > mx : return mx
+        return v
+        
+
+
     def arm_control():
         #move the arm up and down   # Add for encoder motor
         if gamepad.is_key_pressed("Up"):
@@ -115,11 +133,14 @@ class useful_function:
         servo_grabber_main.set_power( -1 * gamepad.get_joystick("Ry") * 0.2)
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
-          #  if box_grab_state == False:
-                servo_grabber_sub.move_to(-16.5, 30)   #-17
-             #   box_grab_state = True
-                while gamepad.is_key_pressed("N1"):
-                    pass
+            while gamepad.is_key_pressed("N1"):
+                # DO SOMETHING
+                pass    
+            current_servo = servo_grabber_sub.get_value("current")
+            while current_servo < 1100:
+                servo_grabber_sub.set_power(-20)
+                current_servo = servo_grabber_sub.get_value("current")
+            servo_grabber_sub.set_power(0)
      
            # new shortcut key N2,N3,N4  
         if gamepad.is_key_pressed("N2"):
@@ -146,9 +167,9 @@ class useful_function:
         
     def gun_control():
         if gamepad.is_key_pressed("R2"):
-            encode_feeder.set_power(100)
-        elif gamepad.is_key_pressed("L2"):
             encode_feeder.set_power(-100)
+        elif gamepad.is_key_pressed("L2"):
+            encode_feeder.set_power(100)
         else:
             encode_feeder.set_power(0)
         #feel ball
@@ -160,6 +181,24 @@ class useful_function:
         else:
             power_expand_board.stop("DC3")
     
+    def heading(x,y,heading_rot):
+        
+        global head_d,head_w,head_Kd,head_Kp,head_error,head_pError
+
+        current_rot = novapi.get_yaw()
+
+        head_error = heading_rot - current_rot
+        head_d = head_d - head_error
+        head_d = useful_function.constrain(head_d,-100,100)
+        head_d = head_error - head_pError
+        head_w = (head_error * head_Kp) + (head_d * head_Kd)
+        head_w = useful_function.constrain(head_w *  heading_sensitivity,-100,100)
+        led_matrix_1.show(head_w, wait = False)
+
+
+        motors.holonomic(y,x,head_w)
+
+        head_pError = head_error
 class program:
 
     #manual program
@@ -171,10 +210,10 @@ class program:
 
         if side == True:
             x = gamepad.get_joystick("Lx")
-            y = gamepad.get_joystick("Ly") * -1
+            y = gamepad.get_joystick("Ly") * -1 * sensitivity_RY
         else:
-            x = gamepad.get_joystick("Ly")
-            y = gamepad.get_joystick("Lx") * -1
+            x = gamepad.get_joystick("Ly") * sensitivity_RY
+            y = gamepad.get_joystick("Lx")
 
         rot = gamepad.get_joystick("Rx") * sensitivity_rot
 
@@ -194,7 +233,12 @@ class program:
         useful_function.gun_control()
         useful_function.arm_control()
             
+    def auto():
+        useful_function.heading(0,30,0)
+        
 
-
+novapi.reset_rotation("z")
 while True:
     program.manual()
+
+    
