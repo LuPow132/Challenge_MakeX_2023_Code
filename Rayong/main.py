@@ -212,10 +212,10 @@ class program:
             x = gamepad.get_joystick("Lx")
             y = gamepad.get_joystick("Ly") * -1 * sensitivity_RY
         else:
-            x = gamepad.get_joystick("Ly") * sensitivity_RY
+            x = gamepad.get_joystick("Ly")
             y = gamepad.get_joystick("Lx")
 
-        rot = gamepad.get_joystick("Rx") * sensitivity_rot
+        rot = gamepad.get_joystick("Rx") * sensitivity_rot * sensitivity_RY
 
         #movement
         motors.holonomic(y,x,rot)
