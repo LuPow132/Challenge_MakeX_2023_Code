@@ -48,9 +48,11 @@ side = True
 current_overload_loop = False
 
 #PID
-head_Kp = 1
-head_Kd = 1
+head_Kp = 0.5
+head_Ki = 0.5
+head_Kd = 0.5
 head_d = 0.0
+head_i = 0.0
 head_w = 0.0
 head_pError = 0.0
 heading_sensitivity = 1
@@ -183,15 +185,15 @@ class useful_function:
     
     def heading(x,y,heading_rot):
         
-        global head_d,head_w,head_Kd,head_Kp,head_error,head_pError
+        global head_i,head_w,head_Kd,head_Kp,head_error,head_pError
 
         current_rot = novapi.get_yaw()
 
         head_error = heading_rot - current_rot
-        head_d = head_d - head_error
-        head_d = useful_function.constrain(head_d,-100,100)
+        head_i = head_i - head_error
+        head_i = useful_function.constrain(head_i,-180,180)
         head_d = head_error - head_pError
-        head_w = (head_error * head_Kp) + (head_d * head_Kd)
+        head_w = (head_error * head_Kp) + (head_i * head_Ki) + (head_d * head_Kd)
         head_w = useful_function.constrain(head_w *  heading_sensitivity,-100,100)
         led_matrix_1.show(head_w, wait = False)
 
