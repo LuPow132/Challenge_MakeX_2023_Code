@@ -48,7 +48,7 @@ side = True
 current_overload_loop = False
 
 #PID
-head_Kp = 0.5
+head_Kp = 0.8
 head_Ki = 0.5
 head_Kd = 0.5
 head_d = 0.0
@@ -236,11 +236,11 @@ class program:
         useful_function.arm_control()
             
     def auto():
-        useful_function.heading(0,30,0)
+        useful_function.heading(0,50,0)
         
 
 novapi.reset_rotation("z")
 while True:
-    program.manual()
+    program.auto()
 
     
