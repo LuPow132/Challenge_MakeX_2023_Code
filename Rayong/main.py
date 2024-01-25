@@ -136,13 +136,8 @@ class useful_function:
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
             while gamepad.is_key_pressed("N1"):
-                # DO SOMETHING
-                pass    
-            current_servo = servo_grabber_sub.get_value("current")
-            while current_servo < 1100:
-                servo_grabber_sub.set_power(-20)
-                current_servo = servo_grabber_sub.get_value("current")
-            servo_grabber_sub.set_power(0)
+                    pass
+            useful_function.stealing_da_cube()
      
            # new shortcut key N2,N3,N4  
         if gamepad.is_key_pressed("N2"):
@@ -201,6 +196,21 @@ class useful_function:
         motors.holonomic(y,x,head_error)
 
         head_pError = head_error
+
+    def stealing_da_cube():
+        servo_grabber_sub.move_to(45, 30)  
+        servo_grabber_main.move_to(135, 30)
+        time.sleep(0.2)
+        servo_grabber_sub.move_to(-12, 30)  
+        time.sleep(0.2)
+        servo_grabber_main.move_to(60, 30)
+        time.sleep(0.2)
+        motors.holonomic(70,0,0)
+        time.sleep(0.4)
+        servo_grabber_sub.move_to(45, 30)  
+        motors.holonomic(0,0,0)
+        time.sleep(0.3)
+
 class program:
 
     #manual program
@@ -223,7 +233,7 @@ class program:
         motors.holonomic(y,x,rot)
 
         if ball_flicker == True:
-            power_expand_board.set_power("DC1", -100)
+            power_expand_board.set_power("DC1", 100)
         else:
             power_expand_board.stop("DC1")
 
@@ -236,11 +246,24 @@ class program:
         useful_function.arm_control()
             
     def auto():
+        global time_start
+        time.sleep(1)
+        novapi.reset_rotation("z")
+        time_start = novapi.timer()
+        while ((time_start - novapi.timer()) < 0.8):
+            useful_function.heading(0,-60,0)
         useful_function.heading(0,0,0)
+        time.sleep(0.3)
+        time_start = novapi.timer()
+        while ((time_start - novapi.timer()) < 1):
+            useful_function.heading(0,0,90)
+
+        #useful_function.heading(0,100,90)
+        
         
 
-novapi.reset_rotation("z")
+program.auto()
 while True:
-    program.auto()
+    program.manual()
 
     
