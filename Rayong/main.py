@@ -48,9 +48,9 @@ side = True
 current_overload_loop = False
 
 #PID
-head_Kp = 0.8
-head_Ki = 0.5
-head_Kd = 0.5
+head_Kp = 0.5
+head_Ki = 0.2
+head_Kd = 0.8
 head_d = 0.0
 head_i = 0.0
 head_w = 0.0
@@ -198,7 +198,7 @@ class useful_function:
         led_matrix_1.show(head_w, wait = False)
 
 
-        motors.holonomic(y,x,head_w)
+        motors.holonomic(y,x,head_error)
 
         head_pError = head_error
 class program:
@@ -215,9 +215,9 @@ class program:
             y = gamepad.get_joystick("Ly") * -1 * sensitivity_RY
         else:
             x = gamepad.get_joystick("Ly")
-            y = gamepad.get_joystick("Lx")
+            y = gamepad.get_joystick("Lx") * sensitivity_RY
 
-        rot = gamepad.get_joystick("Rx") * sensitivity_rot * sensitivity_RY
+        rot = gamepad.get_joystick("Rx") * sensitivity_rot
 
         #movement
         motors.holonomic(y,x,rot)
@@ -236,7 +236,7 @@ class program:
         useful_function.arm_control()
             
     def auto():
-        useful_function.heading(0,50,0)
+        useful_function.heading(0,0,0)
         
 
 novapi.reset_rotation("z")
