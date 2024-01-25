@@ -38,6 +38,8 @@ servo_grabber_sub = smartservo_class("M6", "INDEX2")
 
 led_matrix_1 = led_matrix_class("PORT2", "INDEX1")
 
+arm_level = ranging_sensor_class("PORT3", "INDEX1")
+
 #Sensitivity
 BL_spd = 0
 sensitivity_rot = 0.5
@@ -190,7 +192,8 @@ class useful_function:
         head_d = head_error - head_pError
         head_w = (head_error * head_Kp) + (head_i * head_Ki) + (head_d * head_Kd)
         head_w = useful_function.constrain(head_w *  heading_sensitivity,-100,100)
-        led_matrix_1.show(head_w, wait = False)
+        # led_matrix_1.show(head_w, wait = False)
+        
 
 
         motors.holonomic(y,x,head_error)
@@ -215,6 +218,7 @@ class program:
 
     #manual program
     def manual():
+        led_matrix_1.show(arm_level.get_distance(), wait = False)
         global gun_mode,side,ball_flicker
 
         side = useful_function.toggle_function("≡",side)
@@ -236,6 +240,7 @@ class program:
             power_expand_board.set_power("DC1", 100)
         else:
             power_expand_board.stop("DC1")
+            
 
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
@@ -246,23 +251,27 @@ class program:
         useful_function.arm_control()
             
     def auto():
-        global time_start
         time.sleep(1)
         novapi.reset_rotation("z")
-        time_start = novapi.timer()
-        while ((time_start - novapi.timer()) < 0.8):
-            useful_function.heading(0,-60,0)
-        useful_function.heading(0,0,0)
-        time.sleep(0.3)
-        time_start = novapi.timer()
-        while ((time_start - novapi.timer()) < 1):
+        start_time = novapi.timer()
+
+        while ((novapi.timer() - start_time) < 0.4): 
+            useful_function.heading(0,-50,0)
+
+        time.sleep(0.2)
+
+        start_time = novapi.timer()
+        while ((novapi.timer() - start_time) < 0.6): 
             useful_function.heading(0,0,90)
 
-        #useful_function.heading(0,100,90)
-        
+        time.sleep(0.2)
+
+        start_time = novapi.timer()
+        while ((novapi.timer() - start_time) < 1.6): 
+            useful_function.heading(0,-50,90)        
         
 
-program.auto()
+#program.auto()
 while True:
     program.manual()
 
