@@ -38,6 +38,8 @@ servo_grabber_sub = smartservo_class("M6", "INDEX2")
 
 led_matrix_1 = led_matrix_class("PORT2", "INDEX1")
 
+arm_level = ranging_sensor_class("PORT3", "INDEX1")
+
 #Sensitivity
 BL_spd = 0
 sensitivity_rot = 0.5
@@ -136,13 +138,13 @@ class useful_function:
         #open and cloes grabber
         if gamepad.is_key_pressed("N1"):
             while gamepad.is_key_pressed("N1"):
-                # DO SOMETHING
-                pass    
-            current_servo = servo_grabber_sub.get_value("current")
-            while current_servo < 1100:
-                servo_grabber_sub.set_power(-20)
-                current_servo = servo_grabber_sub.get_value("current")
-            servo_grabber_sub.set_power(0)
+                    pass
+            servo_grabber_sub.move_to(-16.5, 30)
+
+        if gamepad.is_key_pressed("L_Thumb"):
+            while gamepad.is_key_pressed("L_Thumb"):
+                    pass
+            useful_function.stealing_da_cube()
      
            # new shortcut key N2,N3,N4  
         if gamepad.is_key_pressed("N2"):
@@ -151,7 +153,7 @@ class useful_function:
                 time.sleep(0.5)
               
         if gamepad.is_key_pressed("N3"):   
-                servo_grabber_main.move_to(147, 30)  
+                servo_grabber_main.move_to(152, 30)  
                 time.sleep(0.5)
                    
         if gamepad.is_key_pressed("N4"):
@@ -195,16 +197,33 @@ class useful_function:
         head_d = head_error - head_pError
         head_w = (head_error * head_Kp) + (head_i * head_Ki) + (head_d * head_Kd)
         head_w = useful_function.constrain(head_w *  heading_sensitivity,-100,100)
-        led_matrix_1.show(head_w, wait = False)
+        # led_matrix_1.show(head_w, wait = False)
+        
 
 
         motors.holonomic(y,x,head_error)
 
         head_pError = head_error
+
+    def stealing_da_cube():
+        servo_grabber_sub.move_to(45, 30)  
+        servo_grabber_main.move_to(135, 30)
+        time.sleep(0.2)
+        servo_grabber_sub.move_to(-12, 30)  
+        time.sleep(0.2)
+        servo_grabber_main.move_to(60, 30)
+        time.sleep(0.2)
+        motors.holonomic(50,0,0)
+        time.sleep(0.4)
+        servo_grabber_sub.move_to(45, 30)  
+        motors.holonomic(0,0,0)
+        time.sleep(0.3)
+
 class program:
 
     #manual program
     def manual():
+        led_matrix_1.show(arm_level.get_distance(), wait = False)
         global gun_mode,side,ball_flicker
 
         side = useful_function.toggle_function("≡",side)
@@ -223,9 +242,10 @@ class program:
         motors.holonomic(y,x,rot)
 
         if ball_flicker == True:
-            power_expand_board.set_power("DC1", -100)
+            power_expand_board.set_power("DC1", 100)
         else:
             power_expand_board.stop("DC1")
+            
 
         #check for change brushless motor spd
         useful_function.Brushless_spd_mode()
@@ -236,11 +256,46 @@ class program:
         useful_function.arm_control()
             
     def auto():
-        useful_function.heading(0,0,0)
-        
+        time.sleep(1)
+        novapi.reset_rotation("z")
 
-novapi.reset_rotation("z")
-while True:
-    program.auto()
+        start_time = novapi.timer()
+        power_expand_board.set_power("DC1", 100)
+        while ((novapi.timer() - start_time) < 0.8): 
+            useful_function.heading(60,0,0)
+        time.sleep(0.2)
+        useful_function.heading(0,0,0)
+
+        start_time = novapi.timer()
+        while ((novapi.timer() - start_time) < 0.3): 
+            useful_function.heading(0,-40,0)
+        time.sleep(0.2)
+        useful_function.heading(0,0,0)
+
+        start_time = novapi.timer()
+        while ((novapi.timer() - start_time) < 3): 
+            useful_function.heading(60,0,0)
+        time.sleep(0.2)
+        useful_function.heading(0,0,0)
+
+        start_time = novapi.timer()
+        while ((novapi.timer() - start_time) < 8): 
+            useful_function.heading(0,50,-10)
+        time.sleep(0.2)
+        useful_function.heading(0,0,0)
+        while True:
+            program.manual()
+        
+    def start_board_with_power_management():
+        if power_manage_module.is_auto_mode():
+            program.auto()
+        else:
+            while True:
+                program.manual()
+
+#program.start_board_with_power_management()
+program.auto()
+# while True:
+#     program.manual()
 
     
