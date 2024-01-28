@@ -171,9 +171,9 @@ class useful_function:
         
     def gun_control():
         if gamepad.is_key_pressed("R2"):
-            encode_feeder.set_power(-100)
-        elif gamepad.is_key_pressed("L2"):
             encode_feeder.set_power(100)
+        elif gamepad.is_key_pressed("L2"):
+            encode_feeder.set_power(-100)
         else:
             encode_feeder.set_power(0)
         #feel ball
@@ -222,8 +222,9 @@ class useful_function:
 class program:
 
     #manual program
+    
     def manual():
-        led_matrix_1.show(arm_level.get_distance(), wait = False)
+        led_matrix_1.show(BL_spd, wait = False)
         global gun_mode,side,ball_flicker
 
         side = useful_function.toggle_function("≡",side)
@@ -261,30 +262,21 @@ class program:
 
         start_time = novapi.timer()
         power_expand_board.set_power("DC1", 100)
-        while ((novapi.timer() - start_time) < 0.8): 
-            useful_function.heading(60,0,0)
+        while ((novapi.timer() - start_time) < 0.6): 
+            useful_function.heading(0,40,0)
         time.sleep(0.2)
         useful_function.heading(0,0,0)
 
         start_time = novapi.timer()
-        while ((novapi.timer() - start_time) < 0.3): 
-            useful_function.heading(0,-40,0)
+        while ((novapi.timer() - start_time) < 1): 
+            useful_function.heading(0,0,90)
         time.sleep(0.2)
-        useful_function.heading(0,0,0)
+        useful_function.heading(0,0,90)
 
         start_time = novapi.timer()
-        while ((novapi.timer() - start_time) < 3): 
-            useful_function.heading(60,0,0)
+        while ((novapi.timer() - start_time) < 1): 
+            useful_function.heading(0,-50,90)
         time.sleep(0.2)
-        useful_function.heading(0,0,0)
-
-        start_time = novapi.timer()
-        while ((novapi.timer() - start_time) < 8): 
-            useful_function.heading(0,50,-10)
-        time.sleep(0.2)
-        useful_function.heading(0,0,0)
-        while True:
-            program.manual()
         
     def start_board_with_power_management():
         if power_manage_module.is_auto_mode():
@@ -293,8 +285,8 @@ class program:
             while True:
                 program.manual()
 
-#program.start_board_with_power_management()
-program.auto()
+program.start_board_with_power_management()
+#program.auto()
 # while True:
 #     program.manual()
 
